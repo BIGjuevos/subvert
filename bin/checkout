@@ -5,7 +5,7 @@ require_once(dirname(__FILE__) . "/../config.php");
 $args = getopt("p:");
 
 if ( !strlen(@$args['p']) ) {
-	die("You must provide 'p' as the path relative to repos/\n");
+	die("You must provide 'p' as the path relative to $repoPath\n");
 } else {
 	$path = $args['p'];
 }
@@ -28,7 +28,7 @@ foreach ( $repos as $repo => $target ) {
 	echo "\tChecking out '$repo' into '$repoPath/$path/$target'...\n";
 	svn_checkout("$proto://$user@$server$remotePath$repo/$path", "$repoPath/$path/$target");
 	echo "\tFetching the log...\n";
-	$log = svn_log("svn+ssh://$user@bookit-dev.com/var/svn/projects/$repo/$path", SVN_REVISION_HEAD, 1);
+	$log = svn_log("$proto://$user@$server$remotePath$repo/$path", SVN_REVISION_HEAD, 1);
 	echo "\tInserting entries into database...\n";
 	foreach ( $log as $revision ) {
 		extract($revision);

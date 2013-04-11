@@ -15,6 +15,7 @@ if ( count($parts) > 0 ) {
 	echo "Examine: $path\n";
 } else {
 	echo "We couldn't find our what repo... try again.\n";
+	die();
 }
 
 foreach ( $repos as $repo => $target ) {
