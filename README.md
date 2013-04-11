@@ -38,7 +38,7 @@ commands
 ========
 Subversion Tools:
 * checkout: checks out the requested path
-* st: gets the status of the current repo
+* st: gets the status of the current repo in the current working directory.
 
 Other Tools:
 * swap: update symbolic links for a local web host to point to repository for testing
