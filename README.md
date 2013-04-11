@@ -45,3 +45,5 @@ Other Tools:
 notes
 =====
 Works best in a bash linux environment.  Not tested in anything else.
+
+These are the tools I use at work to make my life easier with subversion.  I hope they can maybe help you as well.
