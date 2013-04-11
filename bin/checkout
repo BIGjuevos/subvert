@@ -1,0 +1,45 @@
+#!/usr/bin/env php
+<?php
+require_once(dirname(__FILE__) . "/../config.php");
+
+$args = getopt("p:");
+
+if ( !strlen(@$args['p']) ) {
+	die("You must provide 'p' as the path relative to repos/\n");
+} else {
+	$path = $args['p'];
+}
+
+$branch = basename($path);
+
+echo "I'll be checking out '$branch' into '$path'\n";
+echo "You have 5 seconds to Ctrl+C before I start...\n";
+sleep(5);
+
+echo "\tCreating Directory '$repoPath/$path'\n";
+@mkdir("$repoPath/$path", 0777, true);
+
+echo "\tCreating our tracking database...\n";
+$db = new SQLite3("$repoPath/$path/subversion.db");
+$db->exec("CREATE TABLE revisions (revision INT, message TEXT, author TEXT, ts TEXT, repo STRING)");
+
+foreach ( $repos as $repo => $target ) {
+	echo "\t==== $repo ====\n";
+	echo "\tChecking out '$repo' into '$repoPath/$path/$target'...\n";
+	svn_checkout("$proto://$user@$server$remotePath$repo/$path", "$repoPath/$path/$target");
+	echo "\tFetching the log...\n";
+	$log = svn_log("svn+ssh://$user@bookit-dev.com/var/svn/projects/$repo/$path", SVN_REVISION_HEAD, 1);
+	echo "\tInserting entries into database...\n";
+	foreach ( $log as $revision ) {
+		extract($revision);
+		$msg = $db->escapeString($msg);
+		$sql = "INSERT INTO revisions VALUES ($rev, '$msg', '$author', '$date', '$repo')";
+		if ( !$db->exec($sql) ) {
+			echo $sql . "\n";
+			die();
+		}
+	}
+	echo "\n";
+}
+
+echo "All Done.\n";

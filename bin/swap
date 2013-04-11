@@ -1,0 +1,34 @@
+#!/usr/bin/env php
+<?php
+require_once(dirname(__FILE__) . "/../config.php");
+
+$args = getopt("p:");
+
+if ( !strlen(@$args['p']) ) {
+	die("You must provide 'p' as the path relative to $repoPath\n");
+} else {
+	$path = $args['p'];
+}
+
+$branch = basename($path);
+
+echo "Destrying old symlinks...";
+foreach ($repos as $repo => $target ) {
+	$target = rtrim($target, "/");
+	@shell_exec("rm -f $webRoot$target\n");
+}
+echo "done.\n";
+
+echo "Linking...";
+foreach ($repos as $repo => $target ) {
+	if ( substr_count($target, "/") > 1 ) {
+		continue;
+	}
+	$target = rtrim($target, "/");
+	shell_exec("ln -s $repoPath$path/$target $webRoot$target\n");
+}
+echo "done.\n";
+
+echo "Restarting Apache...";
+shell_exec("sudo /etc/init.d/apache2 restart");
+echo "done.\n";
