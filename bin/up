@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+require_once(dirname(__FILE__) . "/../config.php");
+
+//iterate up one directory at a time until we find our database
+
+$path = trim(getcwd(), "/");
+$parts = explode("/", $path);
+
+while ( !file_exists("/" . implode($parts, "/") . "/subversion.db") && count($parts) > 0 ) {
+	array_pop($parts);
+}
+if ( count($parts) > 0 ) {
+	$path = "/" . implode("/", $parts);
+	echo "Examine: $path\n";
+} else {
+	echo "We couldn't find our what repo... try again.\n";
+	die();
+}
+
+foreach ( $repos as $repo => $target ) {
+	echo "$repo -->\n";
+	$rev = svn_update("$path/$target");
+	
+	if ( $rev ) {
+		echo "\t\033[1;32mupdated\033[0m to r$rev\n";
+	} else {
+		echo "\t\033[0;31mproblem updating\033[0m\n";
+	}
+}

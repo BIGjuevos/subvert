@@ -1,0 +1,44 @@
+#!/usr/bin/env php
+<?php
+require_once(dirname(__FILE__) . "/../config.php");
+
+$args = getopt("f:t:");
+
+if ( !strlen(@$args['f']) ) {
+	die("You must provide 'f' as the path relative to $repoPath for the branch you are merging from.\n");
+} else {
+	$from = $args['f'];
+}
+if ( !strlen(@$args['t']) ) {
+	die("You must provide 't' as the path relative to $repoPath for the branch you are merging into.\n");
+} else {
+	$to = $args['t'];
+}
+
+//update from and to
+echo "Updating source and target first...\n";
+if ( substr($from, 0, 1) != "^" ) {
+	chdir("$repoPath/$from");
+	passthru("up");
+} else {
+	echo "\t\033[1;36mskipping remote update\033[0m\n";
+}
+chdir("$repoPath/$to");
+passthru("up");
+
+chdir($repoPath);
+
+foreach ( $repos as $repo => $target ) {
+	echo "$repo -->\n";
+
+	if ( substr($from, 0, 1) == "^" ) {
+		$fr = $from;
+	} else {
+		$fr = "$repoPath$from/$target";
+	}
+
+	echo "\t\033[1;32mmerging\033[0m '$from' > '$to'...";
+	$cmd = "svn merge -x--ignore-eol-style -x-b --non-interactive $fr $repoPath$to/$target";
+	$res = shell_exec($cmd);
+	echo "done.\n";
+}

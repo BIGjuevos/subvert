@@ -1,0 +1,38 @@
+#!/usr/bin/env php
+<?php
+require_once(dirname(__FILE__) . "/../config.php");
+
+$args = getopt("m:");
+
+if ( !strlen(@$args['m']) ) {
+	die("You must provide 'm' as the message for the commit.\n");
+} else {
+	$msg= $args['m'];
+}
+
+//iterate up one directory at a time until we find our database
+
+$path = trim(getcwd(), "/");
+$parts = explode("/", $path);
+
+while ( !file_exists("/" . implode($parts, "/") . "/subversion.db") && count($parts) > 0 ) {
+	array_pop($parts);
+}
+if ( count($parts) > 0 ) {
+	$path = "/" . implode("/", $parts);
+	echo "Committing: $path\n";
+} else {
+	echo "We couldn't find our what repo... try again.\n";
+	die();
+}
+
+foreach ( $repos as $repo => $target ) {
+	echo "$repo -->\n";
+	$rev = svn_commit($msg, array("$path/$target"));
+	
+	if ( is_array($rev) ) {
+		echo "\t\033[1;32mcommitted\033[0m r{$rev[0]}\n";
+	} else {
+		echo "\t\033[0;31mproblem comitting\033[0m\n";
+	}
+}

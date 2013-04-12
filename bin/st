@@ -29,6 +29,9 @@ foreach ( $repos as $repo => $target ) {
 			case SVN_WC_STATUS_UNVERSIONED:
 				$s = "?";
 				break;
+			case SVN_WC_STATUS_NORMAL:
+				$s = "N";
+				break;
 			case SVN_WC_STATUS_ADDED:
 				$s = "\033[1;32mA";
 				break;
@@ -48,7 +51,7 @@ foreach ( $repos as $repo => $target ) {
 				$s = "\033[0;30mG";
 				break;
 			case SVN_WC_STATUS_CONFLICTED:
-				$s = "\033[1;31mD";
+				$s = "\033[1;31mC";
 				break;
 			case SVN_WC_STATUS_IGNORED:
 				continue;
@@ -56,10 +59,47 @@ foreach ( $repos as $repo => $target ) {
 				$s = "*";
 				break;
 		}
+		switch ( $status['prop_status'] ) {
+			case SVN_WC_STATUS_NONE:
+				$p = "";
+				break;
+			case SVN_WC_STATUS_UNVERSIONED:
+				$p = "?";
+				break;
+			case SVN_WC_STATUS_NORMAL:
+				$p = "N";
+				break;
+			case SVN_WC_STATUS_ADDED:
+				$p = "\033[1;32mA";
+				break;
+			case SVN_WC_STATUS_MISSING:
+				$p = "!";
+				break;
+			case SVN_WC_STATUS_DELETED:
+				$p = "\033[0;31mD";
+				break;
+			case SVN_WC_STATUS_REPLACED:
+				$p = "R";
+				break;
+			case SVN_WC_STATUS_MODIFIED:
+				$p = "\033[1;35mM";
+				break;
+			case SVN_WC_STATUS_MERGED:
+				$p = "\033[0;30mG";
+				break;
+			case SVN_WC_STATUS_CONFLICTED:
+				$p = "\033[1;31mC";
+				break;
+			case SVN_WC_STATUS_IGNORED:
+				continue;
+			default:
+				$p = "*";
+				break;
+		}
 
 		$file = str_ireplace($path, "", $status['path']);
 
-		echo "\t$s\t$file" . "\033[0m" . "\n";
+		echo "\t$s$p\t" . ltrim($file,"/") . "\033[0m" . "\n";
 	}
 
 	if ( !count($statuses) ) {
