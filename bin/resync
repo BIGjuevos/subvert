@@ -1,0 +1,57 @@
+#!/usr/bin/env php
+<?php
+require_once(dirname(__FILE__) . "/../config.php");
+
+$args = getopt("p:");
+
+if ( !strlen(@$args['p']) ) {
+	//iterate up one directory at a time until we find our database
+
+	$path = trim(getcwd(), "/");
+	$parts = explode("/", $path);
+
+	while ( !file_exists("/" . implode($parts, "/") . "/subversion.db") && count($parts) > 0 ) {
+		$post[] = array_pop($parts);
+	}
+	if ( count($parts) > 0 ) {
+		$path = implode("/", $post);
+	} else {
+		echo "We couldn't find our what repo... try again.\n";
+		die();
+	}
+} else {
+	$path = $args['p'];
+}
+
+$branch = basename($path);
+
+echo "I'll be resyncing '$branch' into '$path' against the original repository.\n";
+echo "You have 5 seconds to Ctrl+C before I start...\n";
+sleep(5);
+
+$db = new SQLite3("$repoPath/$path/subversion.db");
+
+foreach ( $repos as $repo => $target ) {
+	echo "\t==== $repo ====\n";
+	echo "\tFetching the log...\n";
+	$log = svn_log("$proto://$user@$server$remotePath$repo/$path", SVN_REVISION_HEAD, 1);
+	echo "\tValidating entries in database...\n";
+	foreach ( $log as $revision ) {
+		extract($revision);
+		$msg = $db->escapeString($msg);
+		$sql = "SELECT COUNT(*) AS cnt FROM revisions WHERE revision=$rev and repo='$repo'";
+		if ( $db->querySingle($sql) > 0 ) {
+		} else {
+			$sql = "INSERT INTO revisions VALUES ($rev, '$msg', '$author', '$date', '$repo')";
+			if ( !$db->exec($sql) ) {
+				echo $sql . "\n";
+				die();
+			} else {
+				echo "\t\t\033[1;32mAdded\033[0m r$rev\n";
+			}
+		}
+	}
+	echo "\n";
+}
+
+echo "All Done.\n";

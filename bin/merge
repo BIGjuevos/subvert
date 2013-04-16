@@ -2,7 +2,8 @@
 <?php
 require_once(dirname(__FILE__) . "/../config.php");
 
-$args = getopt("f:t:");
+$args = getopt("f:t:c::");
+//optional c argument to only merge revisions with a comment
 
 if ( !strlen(@$args['f']) ) {
 	die("You must provide 'f' as the path relative to $repoPath for the branch you are merging from.\n");
@@ -28,8 +29,13 @@ passthru("up");
 
 chdir($repoPath);
 
+$db = new SQLite3("$repoPath/$from/subversion.db");
+
+echo "\nStarting MERGE Process...\n";
+
 foreach ( $repos as $repo => $target ) {
 	echo "$repo -->\n";
+	$revisions = array();
 
 	if ( substr($from, 0, 1) == "^" ) {
 		$fr = $from;
@@ -37,8 +43,25 @@ foreach ( $repos as $repo => $target ) {
 		$fr = "$repoPath$from/$target";
 	}
 
-	echo "\t\033[1;32mmerging\033[0m '$from' > '$to'...";
-	$cmd = "svn merge -x--ignore-eol-style -x-b --non-interactive $fr $repoPath$to/$target";
-	$res = shell_exec($cmd);
-	echo "done.\n";
+	if ( isset($args['c']) ) {
+		$sql = "select * from revisions where repo='$repo' AND message LIKE '%{$args['c']}%' ORDER BY revision ASC";
+		$results = $db->query($sql);
+		while ( $row = $results->fetchArray() ) {
+			echo "\t\033[1;32mmerging\033[0m ({$row['revision']}) '$from' > '$to'...\n";
+			echo "\t" . $row['message'] . "\n";
+			$revisions[] = $row['revision'];
+		}
+		if ( !count($revisions) ) {
+			echo "\t\033[1;36mnothing merged\033[0m\n";
+			continue;
+		}
+		$cmd = "svn merge -x--ignore-eol-style -x-b --non-interactive -c " . implode($revisions, ",") . " $fr $repoPath$to/$target";
+		$res = shell_exec($cmd);
+		echo "\tdone.\n";
+	} else {
+		echo "\t\033[1;32mmerging\033[0m '$from' > '$to'...";
+		$cmd = "svn merge -x--ignore-eol-style -x-b --non-interactive $fr $repoPath$to/$target";
+		$res = shell_exec($cmd);
+		echo "done.\n";
+	}
 }
