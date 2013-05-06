@@ -32,3 +32,7 @@ echo "done.\n";
 echo "Restarting Apache...";
 shell_exec("sudo /etc/init.d/apache2 restart");
 echo "done.\n";
+
+echo "Restarting Memcached...";
+shell_exec("sudo /etc/init.d/memcached restart");
+echo "done.\n";

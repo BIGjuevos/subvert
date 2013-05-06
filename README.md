@@ -36,11 +36,16 @@ PHP Modules
 commands
 ========
 Subversion Tools:
-* checkout: checks out the requested path
+* checkout: checks out the requested path.
+* commit: commits all of the subversion repos at once with the same commit message.
+* merge: from from a branch to another branch, local or remote automatically.  Generally used for syncing with another branch.
+* resync: syncs the revision database with the remote server.
 * st: gets the status of the current repo in the current working directory.
+* up: preforms an update on all found checked out copies within the checked out out branch.
 
 Other Tools:
-* swap: update symbolic links for a local web host to point to repository for testing
+* swap: update symbolic links for a local web host to point to repository for testing.
+* f: a grep search shortcut command.  Ignores subversion repositories and returns color coded results with lines per file.
 
 notes
 =====

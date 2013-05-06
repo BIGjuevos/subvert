@@ -1,0 +1,2 @@
+#!/bin/bash
+fgrep -n -R -i --color --exclude="*.svn*" --exclude-dir=".svn*" "$1" .

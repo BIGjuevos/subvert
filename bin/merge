@@ -21,6 +21,8 @@ echo "Updating source and target first...\n";
 if ( substr($from, 0, 1) != "^" ) {
 	chdir("$repoPath/$from");
 	passthru("up");
+
+	$db = new SQLite3("$repoPath/$from/subversion.db");
 } else {
 	echo "\t\033[1;36mskipping remote update\033[0m\n";
 }
@@ -28,8 +30,6 @@ chdir("$repoPath/$to");
 passthru("up");
 
 chdir($repoPath);
-
-$db = new SQLite3("$repoPath/$from/subversion.db");
 
 echo "\nStarting MERGE Process...\n";
 
