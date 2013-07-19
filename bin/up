@@ -28,3 +28,6 @@ foreach ( $repos as $repo => $target ) {
 		echo "\t\033[0;31mproblem updating\033[0m\n";
 	}
 }
+
+//include our resyncer
+passthru("resync");

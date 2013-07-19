@@ -2,7 +2,7 @@
 <?php
 require_once(dirname(__FILE__) . "/../config.php");
 
-$args = getopt("f:t:c::");
+$args = getopt("f:t:c::u::p::");
 //optional c argument to only merge revisions with a comment
 
 if ( !strlen(@$args['f']) ) {
@@ -14,6 +14,10 @@ if ( !strlen(@$args['t']) ) {
 	die("You must provide 't' as the path relative to $repoPath for the branch you are merging into.\n");
 } else {
 	$to = $args['t'];
+}
+
+if ( isset($args['p']) ) {
+	echo "Pretending...\n";
 }
 
 //update from and to
@@ -49,19 +53,31 @@ foreach ( $repos as $repo => $target ) {
 		while ( $row = $results->fetchArray() ) {
 			echo "\t\033[1;32mmerging\033[0m ({$row['revision']}) '$from' > '$to'...\n";
 			echo "\t" . $row['message'] . "\n";
-			$revisions[] = $row['revision'];
+			if ( isset($args['u']) ) {
+				$revisions[] = "-" . $row['revision'];
+			} else {
+				$revisions[] = $row['revision'];
+			}
 		}
 		if ( !count($revisions) ) {
 			echo "\t\033[1;36mnothing merged\033[0m\n";
 			continue;
 		}
 		$cmd = "svn merge -x--ignore-eol-style -x-b --non-interactive -c " . implode($revisions, ",") . " $fr $repoPath$to/$target";
-		$res = shell_exec($cmd);
+		if ( isset($args['p']) ) {
+			echo "$cmd\n";
+		} else {
+			$res = shell_exec($cmd);
+		}
 		echo "\tdone.\n";
 	} else {
 		echo "\t\033[1;32mmerging\033[0m '$from' > '$to'...";
 		$cmd = "svn merge -x--ignore-eol-style -x-b --non-interactive $fr $repoPath$to/$target";
-		$res = shell_exec($cmd);
+		if ( isset($args['p']) ) {
+			echo "$cmd\n";
+		} else {
+			$res = shell_exec($cmd);
+		}
 		echo "done.\n";
 	}
 }

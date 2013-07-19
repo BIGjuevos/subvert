@@ -2,7 +2,9 @@
 <?php
 require_once(dirname(__FILE__) . "/../config.php");
 
-$args = getopt("p:");
+if ( !isset($args) ) {
+	$args = getopt("p:");
+}
 
 if ( !strlen(@$args['p']) ) {
 	//iterate up one directory at a time until we find our database
@@ -14,7 +16,8 @@ if ( !strlen(@$args['p']) ) {
 		$post[] = array_pop($parts);
 	}
 	if ( count($parts) > 0 ) {
-		$path = implode("/", $post);
+		$path = "/" . implode("/", $parts);
+		echo "Found path '$path'\n";
 	} else {
 		echo "We couldn't find our what repo... try again.\n";
 		die();
@@ -29,7 +32,19 @@ echo "I'll be resyncing '$branch' into '$path' against the original repository.\
 echo "You have 5 seconds to Ctrl+C before I start...\n";
 sleep(5);
 
-$db = new SQLite3("$repoPath/$path/subversion.db");
+try {
+	//track down relative path
+	if ( !(substr($path, 0, 1) == "/") ) {
+		$dbpath = "$repoPath/$path";
+	} else {
+		$dbpath = $path;
+		$path = str_replace($repoPath, "", $path);
+	}
+	$db = new SQLite3("$dbpath/subversion.db");
+} catch (Exception $e) {
+	echo $e->getMessage() . "\n";
+	die();
+}
 
 foreach ( $repos as $repo => $target ) {
 	echo "\t==== $repo ====\n";
@@ -50,6 +65,9 @@ foreach ( $repos as $repo => $target ) {
 				echo "\t\t\033[1;32mAdded\033[0m r$rev\n";
 			}
 		}
+	}
+	if ( !count($log) ) {
+		echo "\t\t\033[1;32mNo Log Entries\033[0m\n";
 	}
 	echo "\n";
 }

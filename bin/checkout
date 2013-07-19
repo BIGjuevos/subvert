@@ -2,7 +2,12 @@
 <?php
 require_once(dirname(__FILE__) . "/../config.php");
 
-$args = getopt("p:");
+$args = getopt("p:h::");
+
+if ( isset($args['h']) ) {
+	usage();
+	die();
+}
 
 if ( !strlen(@$args['p']) ) {
 	die("You must provide 'p' as the path relative to $repoPath\n");
@@ -43,3 +48,9 @@ foreach ( $repos as $repo => $target ) {
 }
 
 echo "All Done.\n";
+
+function usage() {
+	echo "checkout -- subvert\n";
+	echo "Usage: checkout [options]\n";
+	echo "  -p	required	relative path to \$repoPath to checkout\n";
+}
