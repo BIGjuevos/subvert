@@ -38,11 +38,9 @@ commands
 Subversion Tools:
 * checkout: checks out the repositories as configured
 * commit: commits to all repositories in the current branch
-* f: general search utility - basically colored recursive grep command
 * merge: merge code between two branches (remote->local) or (local->local) based on several possible conditions
 * resync: sync local subvert database with remote log
 * st: gets the status of the current repo in the current working directory
-* swap: switch local testing web path to another checkout branch
 * up: updates repos to latest and will resync the database as well
 
 Other Tools:
